@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <title>《小蝌蚪找媽媽》閱讀小測</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e0f2f1;
+            display: flex;
+            height: 100vh;
+        }
+        /* 左側選單 */
+        #sidebar {
+            width: 250px;
+            background-color: #00796b;
+            color: white;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        #sidebar h2 {
+            text-align: center;
+            border-bottom: 2px solid #004d40;
+            padding-bottom: 10px;
+        }
+        .topic-btn {
+            display: block;
+            width: 100%;
+            background-color: #009688;
+            color: white;
+            border: none;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .topic-btn:hover {
+            background-color: #4db6ac;
+        }
+        .topic-btn.active {
+            background-color: #ff9800;
+        }
+        /* 右側內容區 */
+        #content {
+            flex-grow: 1;
+            padding: 40px;
+            background-color: #ffffff;
+            overflow-y: auto;
+        }
+        #quiz-container, #end-container {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h3 {
+            color: #00796b;
+            font-size: 24px;
+        }
+        .question {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option-label {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-size: 18px;
+        }
+        .option-label:hover {
+            background-color: #e0e0e0;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        /* 回饋與按鈕 */
+        #feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 18px;
+            display: none;
+        }
+        .feedback-wrong {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+        .feedback-correct {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+        .action-btn {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: none;
+        }
+        .action-btn:hover {
+            background-color: #f57c00;
+        }
+        /* 表單區 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 左側選單 -->
+    <div id="sidebar">
+        <h2>選擇測驗課題</h2>
+        <button class="topic-btn" onclick="startQuiz(1)">段旨</button>
+        <button class="topic-btn" onclick="startQuiz(2)">修辭</button>
+        <button class="topic-btn" onclick="startQuiz(3)">文章內容</button>
+    </div>
+
+    <!-- 右側內容 -->
+    <div id="content">
+        <div id="welcome-msg">
+            <h2>歡迎來到《小蝌蚪找媽媽》閱讀小測</h2>
+            <p>請在左側選擇一個課題開始挑戰！</p>
+        </div>
+
+        <!-- 測驗區 -->
+        <div id="quiz-container">
+            <h3 id="topic-title"></h3>
+            <p style="text-align: right; color: #666;">進度：<span id="progress"></span>/5</p>
+            <div id="question-text" class="question"></div>
+            <div id="options-container" class="options"></div>
+            
+            <button id="check-btn" class="action-btn" style="display: block;" onclick="checkAnswer()">提交答案</button>
+            <div id="feedback"></div>
+            <button id="next-btn" class="action-btn" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <!-- 完成區塊 & 提交表單 -->
+        <div id="end-container">
+            <h2>恭喜你完成測驗！</h2>
+            <p>請填寫以下資料以記錄你的完成進度：</p>
+            
+            <!-- 使用隱藏 iframe 防止跳轉離開網頁 -->
+            <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted){alert('資料已成功傳送！'); window.location.reload();}"></iframe>
+            
+            <form action="https://docs.google.com/forms/d/e/1FAIpQLSemrdzU69O-ssP_cxpUlpE6G0RNwc34vV3wldIfbVQpWKwJMw/formResponse" method="post" target="hidden_iframe" onsubmit="submitted=true;">
+                <div class="form-group">
+                    <label>班別 (例：3A)</label>
+                    <input type="text" name="entry.753594098" required placeholder="輸入班別">
+                </div>
+                <div class="form-group">
+                    <label>學號 (例：15)</label>
+                    <input type="number" name="entry.777103265" required placeholder="輸入學號">
+                </div>
+                <!-- 隱藏欄位：課題 (段旨1, 修辭2, 文章內容3) -->
+                <input type="hidden" name="entry.951076108" id="S_TOPIC_INPUT">
+                
+                <button type="submit" class="action-btn" style="display: block; width: 100%; background-color: #4CAF50;">傳送記錄</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var submitted = false;
+
+        // 題庫設定
+        const quizData = {
+            1: {
+                title: "段旨",
+                questions: [
+                    { q: "第一自然段主要寫了甚麼？", options: ["描寫小蝌蚪的外貌和快樂的生活", "描寫春天的景色", "描寫池塘的環境"], ans: 0, exp: "文中第一段清楚寫了小蝌蚪「圓圓腦袋、扁扁尾巴、渾身烏黑」以及在水裏「非常快活」。" },
+                    { q: "小蝌蚪為甚麼要找媽媽？", options: ["因為牠們迷路了", "看見鴨媽媽帶着孩子，覺得十分溫馨，就想起自己的媽媽", "因為肚子餓了"], ans: 1, exp: "文中提到小蝌蚪看見鴨媽媽帶着孩子十分溫馨，就想起了自己的媽媽，決定去尋找。" },
+                    { q: "小蝌蚪向鴨媽媽打聽消息，這一段的作用是？", options: ["得知青蛙媽媽的外貌特徵", "認識鴨媽媽", "學習游泳"], ans: 0, exp: "鴨媽媽詳細描述了青蛙媽媽的特徵（大眼睛、白肚皮、綠衣裳等），讓小蝌蚪有線索去尋找。" },
+                    { q: "小蝌蚪向大魚、大烏龜、大白鶴打聽消息，反映了甚麼？", options: ["牠們很喜歡交朋友", "牠們不厭其煩，尋找媽媽的決心很大", "牠們在水裏亂游"], ans: 1, exp: "文中寫到「牠們不厭其煩」，表示小蝌蚪不怕辛苦，很有決心要找到媽媽。" },
+                    { q: "故事的結局是怎樣的？", options: ["小蝌蚪找不到媽媽", "小蝌蚪變成了青蛙", "小蝌蚪終於找到了青蛙媽媽"], ans: 2, exp: "最後青蛙笑着說「我就是你們的媽媽呀！」，代表小蝌蚪成功找到媽媽了。" }
+                ]
+            },
+            2: {
+                title: "修辭",
+                questions: [
+                    { q: "「圓圓腦袋、扁扁尾巴」運用了哪種修辭手法？", options: ["擬人", "疊字", "誇張"], ans: 1, exp: "「圓圓」、「扁扁」都是疊字，用來加強事物的特徵，讀起來也更有節奏感。" },
+                    { q: "「小蝌蚪在水裏游來游去，非常快活。」這句中哪個詞語帶有擬人的意味？", options: ["游來游去", "快活", "水裏"], ans: 1, exp: "「快活」通常形容人的愉快心情，這裏賦予了小蝌蚪人的情感，使描寫更生動。" },
+                    { q: "整個故事中，動物們會彼此說話，這是運用了甚麼修辭手法？", options: ["擬人", "借代", "排比"], ans: 0, exp: "把動物當作人來寫，讓牠們會說話、有思想感情，這就是擬人手法。" },
+                    { q: "「披着綠衣裳」句中「綠衣裳」運用了甚麼修辭手法？", options: ["暗喻 (借喻)", "誇張", "反問"], ans: 0, exp: "把青蛙綠色的皮膚比喻成/當作人穿的「綠衣裳」，使描寫非常生動可愛。" },
+                    { q: "「請問您見過我們的媽媽嗎？」這是一個甚麼句子？", options: ["祈使句", "感歎句", "疑問句"], ans: 2, exp: "句子最後帶有問號，表示提出問題，因此是疑問句。" }
+                ]
+            },
+            3: {
+                title: "文章內容",
+                questions: [
+                    { q: "根據文章，小蝌蚪的外形是怎樣的？", options: ["大大的眼睛，綠色的身體", "圓圓腦袋，扁扁尾巴，渾身烏黑", "有四條腿，白白的肚皮"], ans: 1, exp: "文章開頭清楚寫明小蝌蚪是「圓圓腦袋、扁扁尾巴，渾身烏黑」。" },
+                    { q: "鴨媽媽告訴小蝌蚪，青蛙媽媽有幾條腿？", options: ["兩條", "四條", "六條"], ans: 1, exp: "鴨媽媽描述青蛙媽媽時清楚說了「有四條腿」。" },
+                    { q: "小蝌蚪把媽媽的話牢記在心裏，牠們向誰打聽過媽媽的消息？", options: ["大魚、大烏龜、大白鶴", "燕子、麻雀", "鴨爸爸"], ans: 0, exp: "文中第二段提到「看見大魚、大烏龜、大白鶴，都向牠們打聽媽媽的消息」。" },
+                    { q: "青蛙媽媽坐在哪裏唱歌？", options: ["樹枝上", "石頭上", "碧綠滾圓的荷葉上"], ans: 2, exp: "文中寫到「看見一隻青蛙坐在碧綠滾圓的荷葉上，愉悅地唱着歌」。" },
+                    { q: "為甚麼小蝌蚪一開始認不出青蛙就是自己的媽媽？", options: ["因為青蛙媽媽不理牠們", "因為小蝌蚪長得和青蛙媽媽完全不一樣", "因為小蝌蚪眼睛不好"], ans: 1, exp: "小蝌蚪是黑色的、有尾巴無腿；而青蛙有四條腿、綠衣服，兩者外形差異很大，所以小蝌蚪不知道青蛙就是媽媽。" }
+                ]
+            }
+        };
+
+        let currentTopicId = 0;
+        let currentQuestions = [];
+        let currentIndex = 0;
+
+        function startQuiz(topicId) {
+            // 更新按鈕狀態
+            document.querySelectorAll('.topic-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 初始化數據
+            currentTopicId = topicId;
+            currentQuestions = quizData[topicId].questions;
+            currentIndex = 0;
+
+            // 切換畫面
+            document.getElementById('welcome-msg').style.display = 'none';
+            document.getElementById('end-container').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('topic-title').innerText = "挑戰課題：" + quizData[topicId].title;
+
+            // 設置隱藏表單值 (1:段旨 2:修辭 3:文章內容)
+            document.getElementById('S_TOPIC_INPUT').value = topicId;
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            // 重置回饋區與按鈕
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('check-btn').style.display = 'block';
+
+            let qData = currentQuestions[currentIndex];
+            document.getElementById('progress').innerText = currentIndex + 1;
+            document.getElementById('question-text').innerText = (currentIndex + 1) + ". " + qData.q;
+            
+            let optionsHTML = '';
+            qData.options.forEach((opt, index) => {
+                optionsHTML += `
+                    <label class="option-label">
+                        <input type="radio" name="option" value="${index}">
+                        ${opt}
+                    </label>
+                `;
+            });
+            document.getElementById('options-container').innerHTML = optionsHTML;
+        }
+
+        function checkAnswer() {
+            let selected = document.querySelector('input[name="option"]:checked');
+            if (!selected) {
+                alert("請先選擇一個答案！");
+                return;
+            }
+
+            let selectedAns = parseInt(selected.value);
+            let correctAns = currentQuestions[currentIndex].ans;
+            let feedbackDiv = document.getElementById('feedback');
+
+            if (selectedAns === correctAns) {
+                // 答對了
+                feedbackDiv.innerHTML = "<strong>✅ 答對了！</strong><br>" + currentQuestions[currentIndex].exp;
+                feedbackDiv.className = "feedback-correct";
+                feedbackDiv.style.display = "block";
+                
+                // 隱藏提交按鈕，顯示下一題按鈕
+                document.getElementById('check-btn').style.display = 'none';
+                document.getElementById('next-btn').style.display = 'block';
+
+                // 禁用所有選項
+                document.querySelectorAll('input[name="option"]').forEach(input => input.disabled = true);
+            } else {
+                // 答錯了
+                feedbackDiv.innerHTML = "<strong>❌ 答錯了！</strong> 沒關係，再仔細想想，請再試一次！";
+                feedbackDiv.className = "feedback-wrong";
+                feedbackDiv.style.display = "block";
+            }
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < currentQuestions.length) {
+                loadQuestion();
+            } else {
+                showEndScreen();
+            }
+        }
+
+        function showEndScreen() {
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('end-container').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
